@@ -20,7 +20,7 @@ defmodule KV.Registry do
   def init(:ok) do
     names = %{}
     refs = %{}
-    {:ok, names, refs}
+    {:ok, {names, refs}}
   end
 
   def handle_call({:lookup, name}, _from, state) do
