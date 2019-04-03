@@ -1,7 +1,7 @@
 defmodule KV.Bucket do
-  use Agent
+  use Agent, restart: :temporary
   
-  def start_link do
+  def start_link(_opts) do
     Agent.start_link(fn -> %{} end)
   end
 
