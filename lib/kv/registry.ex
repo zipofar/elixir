@@ -16,7 +16,7 @@ defmodule KV.Registry do
   end
 
   def create(server_name, bucket_name) do
-    GenServer.cast(server_name, {:create, bucket_name})
+    GenServer.call(server_name, {:create, bucket_name})
   end
 
   # Server
@@ -27,16 +27,16 @@ defmodule KV.Registry do
     {:ok, {ets_table_name, refs}}
   end
 
-  def handle_cast({:create, bucket_name}, {ets_table_name, refs}) do
+  def handle_call({:create, bucket_name}, _from, {ets_table_name, refs}) do
     case lookup(ets_table_name, bucket_name) do
-      {:ok, _pid} ->
-        {:noreply, {ets_table_name, refs}}
+      {:ok, pid} ->
+        {:reply, pid, {ets_table_name, refs}}
       :error ->
         {:ok, pid} = DynamicSupervisor.start_child(KV.BucketSupervisor, KV.Bucket)
         ref = Process.monitor(pid)
         refs = Map.put(refs, ref, bucket_name)
         :ets.insert(ets_table_name, {bucket_name, pid})
-        {:noreply, {ets_table_name, refs}}
+        {:reply, pid, {ets_table_name, refs}}
     end
   end
 
